@@ -40,8 +40,7 @@ namespace thinger{
                 switch (wire_type) {
                     case protoson::length_delimited:{
                         uint32_t size = 0;
-                        if(!pb_decode_varint32(size)) return false;
-                        pb_skip(size);
+                        if(!pb_decode_varint32(size) || !pb_skip(size)) return false;
                     }
                         break;
                     case protoson::varint: {

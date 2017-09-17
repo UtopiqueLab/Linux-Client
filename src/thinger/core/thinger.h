@@ -158,6 +158,26 @@ namespace thinger{
             return call_endpoint(endpoint_name, resources_[resource_name]);
         }
 
+        bool write_bucket(const char* bucket_id, pson& data){
+            thinger_message message;
+            message.set_signal_flag(thinger_message::BUCKET_DATA);
+            message.set_identifier(bucket_id);
+            message.set_data(data);
+            return send_message(message);
+        }
+
+        bool write_bucket(const char* bucket_id, thinger_resource& resource){
+            thinger_message message;
+            message.set_signal_flag(thinger_message::BUCKET_DATA);
+            message.set_identifier(bucket_id);
+            resource.fill_output(message.get_data());
+            return send_message(message);
+        }
+
+        bool write_bucket(const char* bucket_id, const char* resource_name){
+            return write_bucket(bucket_id, resources_[resource_name]);
+        }
+
         /**
          * Stream the given resource. This resource should be previously requested by an external process.
          * Otherwise, the resource will not be streamed as nothing will be listening for it.
@@ -182,6 +202,11 @@ namespace thinger{
             encoder.pb_encode_varint(sink.bytes_written());
             encoder.encode(message);
             return write(NULL, 0, true);
+            /* TODO test this properly. Some devices (like AT based ones)
+             * may fail to write, but are not necessarily disconnected */
+            //bool result = write(NULL, 0, true);
+            //if(!result) disconnected();
+            //return result;
         }
 
         void handle(unsigned long current_time, bool bytes_available)
@@ -299,6 +324,7 @@ namespace thinger{
                 send_message(response);
             }
         }
+
     };
 }
 
